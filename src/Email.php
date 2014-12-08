@@ -75,15 +75,24 @@ class Email {
     // $args["site_url"] = absolute_url("");
     // $args["site_email"] = \Openclerk\Config::get('site_email');
     $template = \Openclerk\Templates::replace($template, $arguments);
+    if ($html_template) {
+      $html_template = \Openclerk\Templates::replace($html_template, $arguments);
 
-    // strip out the subject
+      // strip out the subject from the html
+      // (if there is no text template defined, then this template title is going to be used
+      // by the text template title)
+      $html_template = explode("\n", $html_template, 2);
+      $html_template = $html_template[1];
+    }
+
+    // strip out the subject from the text
     $template = explode("\n", $template, 2);
     $subject = $template[0];
     $template = $template[1];
 
     // now send the email
     // may throw MailerException
-    Email::phpmailer($to_email, $to_name, $subject, $template);
+    Email::phpmailer($to_email, $to_name, $subject, $template, $html_template);
 
     // insert in database keys
     $q = $db->prepare("INSERT INTO emails SET
