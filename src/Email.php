@@ -36,14 +36,21 @@ class Email {
       $to_name = $to_email;
     }
 
+    $template = false;
+    $subject = false;
+    $html_template = false;
+
     $template_dir = \Openclerk\Config::get('template_dir_emails', __DIR__ . '/../../../../emails/');
 
-    $template = false;
     if (file_exists($template_dir . $template_id . ".txt")) {
       $template = file_get_contents($template_dir . $template_id . ".txt");
+
+      // strip out the subject from the text
+      $template = explode("\n", $template, 2);
+      $subject = $template[0];
+      $template = $template[1];
     }
 
-    $html_template = false;
     if (file_exists($template_dir . $template_id . ".html")) {
       $html_template = file_get_contents($template_dir . $template_id . ".html");
       if (file_exists($template_dir . "layout.html")) {
@@ -51,6 +58,13 @@ class Email {
 
         $html_template = \Openclerk\Templates::replace($html_layout_template, array('content' => $html_template));
       }
+
+      // strip out the title from the html
+      $matches = false;
+      if (preg_match("#<title>(.+)</title>#im", $html_template, $matches)) {
+        $subject = $matches[1];
+      }
+      $html_template = preg_replace("#<title>.+</title>#im", "", $html_template);
     }
 
     if (!$template) {
@@ -71,24 +85,11 @@ class Email {
     }
 
     // replace variables
-    // $args["site_name"] = \Openclerk\Config::get('site_name');
-    // $args["site_url"] = absolute_url("");
-    // $args["site_email"] = \Openclerk\Config::get('site_email');
     $template = \Openclerk\Templates::replace($template, $arguments);
+    $subject = \Openclerk\Templates::replace($subject, $arguments);
     if ($html_template) {
       $html_template = \Openclerk\Templates::replace($html_template, $arguments);
-
-      // strip out the subject from the html
-      // (if there is no text template defined, then this template title is going to be used
-      // by the text template title)
-      $html_template = explode("\n", $html_template, 2);
-      $html_template = $html_template[1];
     }
-
-    // strip out the subject from the text
-    $template = explode("\n", $template, 2);
-    $subject = $template[0];
-    $template = $template[1];
 
     // now send the email
     // may throw MailerException
