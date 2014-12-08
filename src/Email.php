@@ -18,10 +18,14 @@ class Email {
    */
   static function send(\Db\Connection $db, $to_or_user, $template_id, $arguments = array()) {
     $to_name = false;
+    $to_id = null;
     if (is_object($to_or_user)) {
       $to_email = $to_or_user->getEmail();
       if (method_exists($to_or_user, 'getName')) {
         $to_name = $to_or_user->getName();
+      }
+      if (method_exists($to_or_user, 'getId')) {
+        $to_id = $to_or_user->getId();
       }
     } else if (is_string($to_or_user)) {
       $to_email = $to_or_user;
@@ -63,7 +67,22 @@ class Email {
     // may throw MailerException
     Email::phpmailer($to_email, $to_name, $subject, $template);
 
-    // TODO insert in database keys
+    // insert in database keys
+    $q = $db->prepare("INSERT INTO emails SET
+      user_id=:user_id,
+      to_name=:to_name,
+      to_email=:to_email,
+      subject=:subject,
+      template_id=:template_id,
+      arguments=:arguments");
+    $q->execute(array(
+      "user_id" => $to_id,
+      "to_name" => $to_name,
+      "to_email" => $to_email,
+      "subject" => $subject,
+      "template_id" => $template_id,
+      "arguments" => serialize($arguments),
+    ));
 
     return true;
   }
