@@ -8,7 +8,6 @@ class Email {
    * The subject of the e-mail is obtained from the first line of the text e-mail template, or the
    * <title> of the HTML template.
    *
-   * TODO support html emails
    * TODO support mock mailing
    * TODO support i18n
    * TODO service wrapper to allow emails to be queued
@@ -92,8 +91,8 @@ class Email {
     }
 
     // inline CSS?
-    if (file_exists($template_dir . $template_id . ".css")) {
-      $css = file_get_contents($template_dir . $template_id . ".css");
+    if (file_exists($template_dir . "layout.css")) {
+      $css = file_get_contents($template_dir . "layout.css");
 
       $emogrifier = new \Pelago\Emogrifier();
       $emogrifier->setHtml($html_template);
