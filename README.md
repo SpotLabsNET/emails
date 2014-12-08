@@ -40,7 +40,7 @@ if ($migrations->hasPending(db())) {
 
 1. Send either text or HTML emails
 1. Generate text multipart automatically with [html2text](https://github.com/soundasleep/html2text)
-1. Automatically inline CSS styles with [emogrifier](https://github.com/jjriv/emogrifier)
+1. Automatically inline CSS styles with [emogrifier](https://github.com/jjriv/emogrifier) for [clients like Gmail](https://litmus.com/blog/understanding-gmail-and-css-part-1)
 1. Tracks e-mails sent using `emails` database table
 1. Send emails to raw addresses or to User objects that return `getEmail()`
 
