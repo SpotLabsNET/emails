@@ -38,11 +38,29 @@ class Email {
 
     $template_dir = \Openclerk\Config::get('template_dir_emails', __DIR__ . '/../../../../emails/');
 
-    if (!file_exists($template_dir . $template_id . ".txt")) {
-      throw new MailerException("Email template '$template_id' does not exist within '$template_dir'");
+    $template = false;
+    if (file_exists($template_dir . $template_id . ".txt")) {
+      $template = file_get_contents($template_dir . $template_id . ".txt");
     }
 
-    $template = file_get_contents($template_dir . $template_id . ".txt");
+    $html_template = false;
+    if (file_exists($template_dir . $template_id . ".html")) {
+      $html_template = file_get_contents($template_dir . $template_id . ".html");
+      if (file_exists($template_dir . "layout.html")) {
+        $html_layout_template = file_get_contents($template_dir . "layout.html");
+
+        $html_template = \Openclerk\Templates::replace($html_layout_template, array('content' => $html_template));
+      }
+    }
+
+    if (!$template) {
+      if ($html_template) {
+        // use html2text to generate the text body automatically
+        $template = \Html2Text\Html2Text::convert($html_template);
+      } else {
+        throw new MailerException("Email template '$template_id' did not exist within '$template_dir'");
+      }
+    }
 
     // default arguments
     if (!isset($arguments['email'])) {
@@ -91,7 +109,7 @@ class Email {
    * TODO support HTML emails
    * @throws MailerException if the mail could not be immediately sent
    */
-  static function phpmailer($to, $to_name, $subject, $message) {
+  static function phpmailer($to, $to_name, $subject, $message, $html_message = false) {
     $mail = new \PHPMailer();
 
     $mail->IsSMTP();                                      // set mailer to use SMTP
@@ -113,7 +131,13 @@ class Email {
     }
 
     $mail->Subject = $subject;
-    $mail->Body    = $message;
+    if ($html_message) {
+      $mail->Body = $html_message;
+      $mail->AltBody = $message;
+      $mail->IsHTML(true);
+    } else {
+      $mail->Body    = $message;
+    }
 
     if(!$mail->Send()) {
       throw new MailerException("Message could not be sent: " . $mail->ErrorInfo);
