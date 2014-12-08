@@ -91,6 +91,16 @@ class Email {
       $html_template = \Openclerk\Templates::replace($html_template, $arguments);
     }
 
+    // inline CSS?
+    if (file_exists($template_dir . $template_id . ".css")) {
+      $css = file_get_contents($template_dir . $template_id . ".css");
+
+      $emogrifier = new \Pelago\Emogrifier();
+      $emogrifier->setHtml($html_template);
+      $emogrifier->setCss($css);
+      $html_template = $emogrifier->emogrify();
+    }
+
     // now send the email
     // may throw MailerException
     Email::phpmailer($to_email, $to_name, $subject, $template, $html_template);

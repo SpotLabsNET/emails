@@ -5,7 +5,8 @@
     "openclerk/config": "dev-master",
     "openclerk/templates": "dev-master",
     "phpmailer/phpmailer": ">=5.2.9",
-    "soundasleep/html2text": ">=0.2.0"
+    "soundasleep/html2text": ">=0.2.0",
+    "pelago/emogrifier": "dev-master"
   },
   "autoload": {
     "psr-4": {
