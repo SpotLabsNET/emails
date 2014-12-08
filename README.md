@@ -6,21 +6,16 @@ A library for sending emails and email management.
 ## Installing
 
 Include `openclerk/emails` as a requirement in your project `composer.json`,
-and run `composer update` to install it into your project. You'll also
-have to include `pelago/emogrifier` [as an explicit dependency](https://github.com/jjriv/emogrifier/issues/113):
+and run `composer update` to install it into your project.
 
 ```json
 {
   "require": {
-    "openclerk/emails": "dev-master",
-    "pelago/emogrifier": "dev-master"
+    "openclerk/emails": "dev-master"
   },
   "repositories": [{
     "type": "vcs",
     "url": "https://github.com/openclerk/emails"
-  }, {
-    "type": "vcs",
-    "url": "https://github.com/jjriv/emogrifier"
   }]
 }
 ```
