@@ -11,15 +11,28 @@ class Email {
    * TODO support html emails
    * TODO support mock mailing
    * TODO support i18n
+   * TODO service wrapper to allow emails to be queued
    *
    * @param $to_or_user either an email address, or something with getEmail() and optionally getName()
    * @throws MailerException if the mail could not be immediately sent (e.g. technical error, invalid e-mail address...)
    */
   static function send(\Db\Connection $db, $to_or_user, $template_id, $arguments = array()) {
-    $to_email = false;
     $to_name = false;
+    if (is_object($to_or_user)) {
+      $to_email = $to_or_user->getEmail();
+      if (method_exists($to_or_user, 'getName')) {
+        $to_name = $to_or_user->getName();
+      }
+    } else if (is_string($to_or_user)) {
+      $to_email = $to_or_user;
+    } else {
+      throw new MailerException("Unknown 'to' type " . gettype($to_or_user));
+    }
+    if (!$to_name) {
+      $to_name = $to_email;
+    }
 
-    $template_dir = \Openclerk\Config::get('template_dir_emails', __DIR__ . '/../emails/');
+    $template_dir = \Openclerk\Config::get('template_dir_emails', __DIR__ . '/../../../../emails/');
 
     if (!file_exists($template_dir . $template_id . ".txt")) {
       throw new MailerException("Email template '$template_id' does not exist within '$template_dir'");
@@ -27,8 +40,15 @@ class Email {
 
     $template = file_get_contents($template_dir . $template_id . ".txt");
 
+    // default arguments
+    if (!isset($arguments['email'])) {
+      $arguments['email'] = $to_email;
+    }
+    if (!isset($arguments['name'])) {
+      $arguments['name'] = $to_name;
+    }
+
     // replace variables
-    // TODO add escaping
     // $args["site_name"] = \Openclerk\Config::get('site_name');
     // $args["site_url"] = absolute_url("");
     // $args["site_email"] = \Openclerk\Config::get('site_email');
@@ -43,7 +63,9 @@ class Email {
     // may throw MailerException
     Email::phpmailer($to_email, $to_name, $subject, $template);
 
-    // TODO
+    // TODO insert in database keys
+
+    return true;
   }
 
   /**
