@@ -1,0 +1,14 @@
+{
+  "name": "openclerk/emails",
+  "require": {
+    "openclerk/db": "dev-master",
+    "openclerk/config": "dev-master",
+    "openclerk/templates": "dev-master",
+    "phpmailer/phpmailer": "dev-master"
+  },
+  "autoload": {
+    "psr-4": {
+      "Emails\\": "src"
+    }
+  }
+}
