@@ -105,15 +105,14 @@ class Email {
     Email::phpmailer($to_email, $to_name, $subject, $template, $html_template);
 
     // allow others to capture this event
-    $email = array(
+    \Openclerk\Events::trigger('email_sent', array(
       "user_id" => $to_id,
       "to_name" => $to_name,
       "to_email" => $to_email,
       "subject" => $subject,
       "template_id" => $template_id,
       "arguments" => $arguments,
-    );
-    \Openclerk\Events::trigger('email_sent', new EmailEvent($email));
+    ));
 
     return true;
   }
