@@ -15,7 +15,7 @@ class Email {
    * @param $to_or_user either an email address, or something with getEmail() and optionally getName()
    * @throws MailerException if the mail could not be immediately sent (e.g. technical error, invalid e-mail address...)
    */
-  static function send(\Db\Connection $db, $to_or_user, $template_id, $arguments = array()) {
+  static function send($to_or_user, $template_id, $arguments = array()) {
     $to_name = false;
     $to_id = null;
     if (is_object($to_or_user)) {
@@ -104,22 +104,16 @@ class Email {
     // may throw MailerException
     Email::phpmailer($to_email, $to_name, $subject, $template, $html_template);
 
-    // insert in database keys
-    $q = $db->prepare("INSERT INTO emails SET
-      user_id=:user_id,
-      to_name=:to_name,
-      to_email=:to_email,
-      subject=:subject,
-      template_id=:template_id,
-      arguments=:arguments");
-    $q->execute(array(
+    // allow others to capture this event
+    $email = array(
       "user_id" => $to_id,
       "to_name" => $to_name,
       "to_email" => $to_email,
       "subject" => $subject,
       "template_id" => $template_id,
-      "arguments" => serialize($arguments),
-    ));
+      "arguments" => $arguments,
+    );
+    \Openclerk\Events::trigger('email_sent', new EmailEvent($email));
 
     return true;
   }
