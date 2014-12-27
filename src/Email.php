@@ -107,7 +107,11 @@ class Email {
 
     // now send the email
     // may throw MailerException
-    Email::phpmailer($to_email, $to_name, $subject, $template, $html_template);
+    if (self::$mock_mailer) {
+      call_user_func(self::$mock_mailer, $to_email, $to_name, $subject, $template, $html_template);
+    } else {
+      Email::phpmailer($to_email, $to_name, $subject, $template, $html_template);
+    }
 
     // allow others to capture this event
     \Openclerk\Events::trigger('email_sent', array(
@@ -120,6 +124,16 @@ class Email {
     ));
 
     return true;
+  }
+
+  static $mock_mailer = null;
+
+  /**
+   * @param $mock a callback with arguments ($to_email, $to_name, $subject, $template, $html_template),
+   *            or {@code null} to remove the mock mailer
+   */
+  static function setMockMailer($mock) {
+    self::$mock_mailer = $mock;
   }
 
   /**

@@ -129,9 +129,27 @@ Openclerk\Events::on('email_sent', function($email) {
 });
 ```
 
+## Mock mailing
+
+You can set a mock mailer by calling `Emails\Email::setMockMailer($callback)` with a valid
+callback
+
+```php
+function setUp() {
+  Emails\Email::setMockMailer(array($this, "mockMailer"));
+}
+
+function tearDown() {
+  Emails\Email::setMockMailer(null);
+}
+
+function mockMailer($to_email, $to_name, $subject, $template, $html_template) {
+  // do your mock tests...
+}
+```
+
 ## TODO
 
 1. Queueing up/batch emails
 1. Properly escape templates
-1. Mock mailing
 1. i18n
