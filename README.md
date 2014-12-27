@@ -93,7 +93,7 @@ if (!$user) {
   $user = "test@example.com";
 }
 
-$result = send_email($user, "<id>", array(
+$result = Emails\Email::send($user, "<id>", array(
   "now" => date('r'),
 ));
 ```
