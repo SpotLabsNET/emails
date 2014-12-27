@@ -39,10 +39,10 @@ class Email {
     $subject = false;
     $html_template = false;
 
-    $template_dir = \Openclerk\Config::get('template_dir_emails', __DIR__ . '/../../../../emails/');
+    $template_dir = \Openclerk\Config::get('emails_templates', __DIR__ . '/../../../../emails');
 
-    if (file_exists($template_dir . $template_id . ".txt")) {
-      $template = file_get_contents($template_dir . $template_id . ".txt");
+    if (file_exists($template_dir . "/" . $template_id . ".txt")) {
+      $template = file_get_contents($template_dir . "/" . $template_id . ".txt");
 
       // strip out the subject from the text
       $template = explode("\n", $template, 2);
@@ -50,10 +50,10 @@ class Email {
       $template = $template[1];
     }
 
-    if (file_exists($template_dir . $template_id . ".html")) {
-      $html_template = file_get_contents($template_dir . $template_id . ".html");
-      if (file_exists($template_dir . "layout.html")) {
-        $html_layout_template = file_get_contents($template_dir . "layout.html");
+    if (file_exists($template_dir . "/" . $template_id . ".html")) {
+      $html_template = file_get_contents($template_dir . "/" . $template_id . ".html");
+      if (file_exists($template_dir . "/" . "layout.html")) {
+        $html_layout_template = file_get_contents($template_dir . "/" . "layout.html");
 
         $html_template = \Openclerk\Templates::replace($html_layout_template, array('content' => $html_template));
       }
@@ -91,8 +91,13 @@ class Email {
     }
 
     // inline CSS?
-    if (file_exists($template_dir . "layout.css")) {
-      $css = file_get_contents($template_dir . "layout.css");
+    if (file_exists($template_dir . "/layout.css")) {
+      $css = file_get_contents($template_dir . "/layout.css");
+
+      // custom CSS?
+      if (\Openclerk\Config::get("emails_additional_css", false)) {
+       $css .= file_get_contents(\Openclerk\Config::get("emails_additional_css", false));
+      }
 
       $emogrifier = new \Pelago\Emogrifier();
       $emogrifier->setHtml($html_template);

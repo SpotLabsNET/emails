@@ -43,6 +43,10 @@ Openclerk\Config::merge(array(
   "phpmailer_from_name" => "Example Mailer",
   "phpmailer_reply_to" => "mailer@example.com",
   "phpmailer_bcc" => "copy@example.com",   // if set, send a copy of all emails to this address
+
+  // optional values
+  // "emails_templates" => __DIR__ . "/../emails",
+  // "emails_additional_css" => __DIR__ . "/../config/custom.css",
 ));
 ```
 
