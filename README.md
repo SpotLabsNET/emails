@@ -20,31 +20,19 @@ and run `composer update` to install it into your project.
 }
 ```
 
-Make sure that you run all of the migrations that can be discovered
-through [component-discovery](https://github.com/soundasleep/component-discovery);
-see the documentation on [openclerk/db](https://github.com/openclerk/db) for more information.
-
-```php
-$migrations = new AllMigrations(db());
-if ($migrations->hasPending(db())) {
-  $migrations->install(db(), $logger);
-}
-```
-
 ## Features
 
 1. Send either text or HTML emails
 1. Generate text multipart automatically with [html2text](https://github.com/soundasleep/html2text)
 1. Automatically inline CSS styles with [emogrifier](https://github.com/jjriv/emogrifier) for [clients like Gmail](https://litmus.com/blog/understanding-gmail-and-css-part-1)
-1. Tracks e-mails sent using `emails` database table
+1. Track e-mails sent with the `email_sent` [event](https://github.com/openclerk/events)
 1. Send emails to raw addresses or to User objects that return `getEmail()`
 
 ## Using
 
-This project uses [openclerk/db](https://github.com/openclerk/db) for database
-management and [openclerk/config](https://github.com/openclerk/config) for config management.
+This project uses [openclerk/config](https://github.com/openclerk/config) for config management.
 
-First configure the component with site-specific values:
+First configure the component with site-specific values (assumes SMTP):
 
 ```php
 Openclerk\Config::merge(array(
@@ -110,11 +98,36 @@ $result = send_email($user, "<id>", array(
 ));
 ```
 
+## Tracking emails sent
+
+The `email_sent` [event](https://github.com/openclerk/events) can be used to track
+emails that have been sent, for example by inserting them into an `emails`
+[database table](https://github.com/openclerk/db):
+
+```php
+Openclerk\Events::on('email_sent', function($email) {
+  // insert in database keys
+  $q = db()->prepare("INSERT INTO emails SET
+    user_id=:user_id,
+    to_name=:to_name,
+    to_email=:to_email,
+    subject=:subject,
+    template_id=:template_id,
+    arguments=:arguments");
+  $q->execute(array(
+    "user_id" => $email['user_id'],
+    "to_name" => $email['to_name'],
+    "to_email" => $email['to_email'],
+    "subject" => $email['subject'],
+    "template_id" => $email['template_id'],
+    "arguments" => serialize($email['arguments']),
+  ));
+});
+```
+
 ## TODO
 
 1. Queueing up/batch emails
 1. Properly escape templates
 1. Mock mailing
 1. i18n
-1. Tests
-1. Publish on Packagist
