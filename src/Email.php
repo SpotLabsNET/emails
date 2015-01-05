@@ -14,6 +14,7 @@ class Email {
    *
    * @param $to_or_user either an email address, or something with getEmail() and optionally getName()
    * @throws MailerException if the mail could not be immediately sent (e.g. technical error, invalid e-mail address...)
+   * @return the email result object, which is also sent to the `email_sent` event trigger
    */
   static function send($to_or_user, $template_id, $arguments = array()) {
     $to_name = false;
@@ -108,22 +109,24 @@ class Email {
     // now send the email
     // may throw MailerException
     if (self::$mock_mailer) {
-      call_user_func(self::$mock_mailer, $to_email, $to_name, $subject, $template, $html_template);
+      $message_id = call_user_func(self::$mock_mailer, $to_email, $to_name, $subject, $template, $html_template);
     } else {
-      Email::phpmailer($to_email, $to_name, $subject, $template, $html_template);
+      $message_id = Email::phpmailer($to_email, $to_name, $subject, $template, $html_template);
     }
 
     // allow others to capture this event
-    \Openclerk\Events::trigger('email_sent', array(
+    $result = array(
       "user_id" => $to_id,
       "to_name" => $to_name,
       "to_email" => $to_email,
       "subject" => $subject,
       "template_id" => $template_id,
       "arguments" => $arguments,
-    ));
+      "message_id" => $message_id,
+    );
+    \Openclerk\Events::trigger('email_sent', $result);
 
-    return true;
+    return $result;
   }
 
   static $mock_mailer = null;
@@ -138,6 +141,7 @@ class Email {
 
   /**
    * TODO support HTML emails
+   * @return the sent message ID
    * @throws MailerException if the mail could not be immediately sent
    */
   static function phpmailer($to, $to_name, $subject, $message, $html_message = false) {
@@ -173,6 +177,8 @@ class Email {
     if(!$mail->Send()) {
       throw new MailerException("Message could not be sent: " . $mail->ErrorInfo);
     }
+
+    return $mail->GetLastMessageID();
   }
 
 }
