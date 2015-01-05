@@ -153,3 +153,4 @@ function mockMailer($to_email, $to_name, $subject, $template, $html_template) {
 1. Queueing up/batch emails
 1. Properly escape templates
 1. i18n
+1. Failure notifications
