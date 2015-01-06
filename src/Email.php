@@ -3,6 +3,18 @@
 namespace Emails;
 
 class Email {
+
+  static $global_arguments = array();
+
+  /**
+   * This allows clients to add global variables to all emails sent.
+   * @param $callback callback function that returns an argument value,
+   *    given the original $arguments as the first parameter
+   */
+  static function registerGlobalArgument($name, $callback) {
+    self::$global_arguments[$name] = $callback;
+  }
+
   /**
    * Send an email with the given template to the given user or address.
    * The subject of the e-mail is obtained from the first line of the text e-mail template, or the
@@ -17,6 +29,13 @@ class Email {
    * @return the email result object, which is also sent to the `email_sent` event trigger
    */
   static function send($to_or_user, $template_id, $arguments = array()) {
+    // add any global arguments
+    foreach (static::$global_arguments as $name => $callback) {
+      if (!isset($arguments[$name])) {
+        $arguments[$name] = call_user_func($callback, $arguments);
+      }
+    }
+
     $to_name = false;
     $to_id = null;
     if (is_object($to_or_user)) {
