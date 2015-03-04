@@ -55,6 +55,44 @@ class Email {
       $to_name = $to_email;
     }
 
+    // default arguments
+    if (!isset($arguments['email'])) {
+      $arguments['email'] = $to_email;
+    }
+    if (!isset($arguments['name'])) {
+      $arguments['name'] = $to_name;
+    }
+
+    $compiled = self::compile($template_id, $arguments);
+    $template = $compiled['text'];
+    $html_template = $compiled['html'];
+    $subject = $compiled['subject'];
+
+    // now send the email
+    // may throw MailerException
+    if (self::$mock_mailer) {
+      $message_id = call_user_func(self::$mock_mailer, $to_email, $to_name, $subject, $template, $html_template);
+    } else {
+      $message_id = Email::phpmailer($to_email, $to_name, $subject, $template, $html_template);
+    }
+
+    // allow others to capture this event
+    $result = array(
+      "user_id" => $to_id,
+      "to_name" => $to_name,
+      "to_email" => $to_email,
+      "subject" => $subject,
+      "template_id" => $template_id,
+      "arguments" => $arguments,
+      "message_id" => $message_id,
+    );
+    \Openclerk\Events::trigger('email_sent', $result);
+
+    return $result;
+  }
+
+  static function compile($template_id, $arguments = array()) {
+
     $template = false;
     $subject = false;
     $html_template = false;
@@ -95,14 +133,6 @@ class Email {
       }
     }
 
-    // default arguments
-    if (!isset($arguments['email'])) {
-      $arguments['email'] = $to_email;
-    }
-    if (!isset($arguments['name'])) {
-      $arguments['name'] = $to_name;
-    }
-
     // replace variables
     $template = \Openclerk\Templates::replace($template, $arguments);
     $subject = \Openclerk\Templates::replace($subject, $arguments);
@@ -125,27 +155,11 @@ class Email {
       $html_template = $emogrifier->emogrify();
     }
 
-    // now send the email
-    // may throw MailerException
-    if (self::$mock_mailer) {
-      $message_id = call_user_func(self::$mock_mailer, $to_email, $to_name, $subject, $template, $html_template);
-    } else {
-      $message_id = Email::phpmailer($to_email, $to_name, $subject, $template, $html_template);
-    }
-
-    // allow others to capture this event
-    $result = array(
-      "user_id" => $to_id,
-      "to_name" => $to_name,
-      "to_email" => $to_email,
-      "subject" => $subject,
-      "template_id" => $template_id,
-      "arguments" => $arguments,
-      "message_id" => $message_id,
+    return array(
+      'subject' => $subject,
+      'html' => $html_template,
+      'text' => $template,
     );
-    \Openclerk\Events::trigger('email_sent', $result);
-
-    return $result;
   }
 
   static $mock_mailer = null;
