@@ -1,4 +1,4 @@
-openclerk/emails
+openclerk/emails [![Build Status](https://travis-ci.org/openclerk/emails.svg?branch=master)](https://travis-ci.org/openclerk/emails)
 ================
 
 A library for sending emails and email management.
