@@ -154,3 +154,7 @@ function mockMailer($to_email, $to_name, $subject, $template, $html_template) {
 1. Properly escape templates
 1. i18n
 1. Failure notifications
+
+## Other versions
+
+1. [actionmailer-html2text](https://github.com/soundasleep/actionmailer-html2text) is a Ruby e-mail framework that automatically generates text multiparts for ActionMailer
