@@ -7,16 +7,13 @@ A library for sending emails and email management.
 
 Include `openclerk/emails` as a requirement in your project `composer.json`,
 and run `composer update` to install it into your project.
+Or, run `composer require openclerk/emails`.
 
 ```json
 {
   "require": {
-    "openclerk/emails": "dev-master"
-  },
-  "repositories": [{
-    "type": "vcs",
-    "url": "https://github.com/openclerk/emails"
-  }]
+    "openclerk/emails": "^0.1"
+  }
 }
 ```
 
